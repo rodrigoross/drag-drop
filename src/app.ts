@@ -6,6 +6,16 @@ class ProjectInput {
   hostElement: HTMLDivElement;
   formElement: HTMLFormElement;
 
+  /**
+   * Propriedades com acesso aos inputs do formulário.
+   */
+  tituloInput: HTMLInputElement;
+  descricaoInput: HTMLInputElement;
+  pessoasInput: HTMLInputElement;
+
+  /**
+   * Inicializa e carrega os elementos HTML em memória para as propriedades.
+   */
   constructor() {
     // Busca elemento com o template do formulario
     this.templateElement = document.getElementById(
@@ -25,6 +35,14 @@ class ProjectInput {
 
     // Pega o primeiro elemento (form) e salva na váriavel
     this.formElement = importContent.firstElementChild as HTMLFormElement;
+    this.formElement.id = "user-input"; // adiciona ID para aplicar CSS
+
+    // Pega acesso aos inputs.
+    this.tituloInput = this.formElement.querySelector('#title')! as HTMLInputElement;
+    this.descricaoInput = this.formElement.querySelector('#description')! as HTMLInputElement;
+    this.pessoasInput = this.formElement.querySelector('#people')! as HTMLInputElement;
+
+    this.configure(); // Adiciona eventListener no formulário
 
     // renderiza o conteudo.
     this.attach();
@@ -35,6 +53,25 @@ class ProjectInput {
    */
   private attach() {
     this.hostElement.insertAdjacentElement("afterbegin", this.formElement);
+  }
+
+  /**
+   * Método responsável por adicionar listener no submit do formulario.
+   */
+  private configure() {
+    //   this.formElement.addEventListener('submit', this.handleSubmit); // This. que será executado no evento não se refere a classe instanciada.
+      this.formElement.addEventListener('submit', this.handleSubmit.bind(this)); // Agora é repassado o mesmo this, executado no método configure (class ProjectInput) para o metodo do submit
+  }
+
+  /**
+   * Método responsável por executar a lógica de submit.
+   * @param event 
+   */
+  private handleSubmit(event: Event) {
+    event.preventDefault();
+
+    console.log(this.tituloInput.value);
+    
   }
 }
 
