@@ -83,6 +83,23 @@ class ProjectInput {
     this.formElement.addEventListener("submit", this.handleSubmit)
   }
 
+  private loadUserInput(): [ string, string, number ] | void {
+    const titulo = this.tituloInput.value;
+    const descricao = this.descricaoInput.value;
+    const pessoas = this.pessoasInput.value;
+
+    // validação simples
+    if (titulo.trim().length === 0 ||
+      descricao.trim().length === 0 ||
+      pessoas.trim().length === 0) 
+    {
+      alert('Valores invalidos, tente novamente!');
+      return;
+    }
+
+    return [ titulo, descricao, +pessoas];
+  }
+
   /**
    * Método responsável por executar a lógica de submit.
    * @param event 
@@ -91,8 +108,25 @@ class ProjectInput {
   private handleSubmit(event: Event) {
     event.preventDefault();
 
-    console.log(this.tituloInput.value);
-    
+    const entradaUsuario = this.loadUserInput(); // Carrega valores de entrada no formulário
+
+    // verifica se veio os valores de tupla
+    if (Array.isArray(entradaUsuario)) {
+      const [ titulo, desc, pessoas] = entradaUsuario; // remove valores do array
+
+      console.log(titulo, desc, pessoas);
+    }
+
+    this.limpaFormulario();
+  }
+
+  /**
+   * Limpa campos do formulario de projetos.
+   */
+  private limpaFormulario() {
+    this.tituloInput.value = '';
+    this.descricaoInput.value = '';
+    this.pessoasInput.value = '';
   }
 }
 
