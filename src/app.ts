@@ -55,8 +55,58 @@ function validate(input: Validatable) {
 }
 
 /**
- * OOP
- * Project Input Class
+ * Classes
+ */
+
+/**
+ * Project List
+ */
+class ProjectList {
+  templateElement: HTMLTemplateElement;
+  hostElement: HTMLDivElement;
+  element: HTMLElement;
+
+  constructor(private type: "active" | "finished") {
+    // Busca elemento com o template do formulario
+    this.templateElement = document.getElementById(
+      "project-list"
+    )! as HTMLTemplateElement;
+
+    // Div onde a aplicação será executada.
+    this.hostElement = document.getElementById("app")! as HTMLDivElement;
+
+    /**
+     * Carrega o conteudo do template para renderizar no DOM.
+     */
+    const importContent = document.importNode(
+      this.templateElement.content,
+      true
+    );
+
+    // Pega o primeiro elemento (form) e salva na váriavel
+    this.element = importContent.firstElementChild as HTMLElement;
+    this.element.id = `${this.type}-projects`; // adiciona ID para aplicar CSS e identificar
+    this.attach();
+    this.renderContent();
+  }
+
+  private renderContent() {
+    const listId = `${this.type}-projects-list`;
+    this.element.querySelector("ul")!.id = listId; //acessa e seta a tag html
+    this.element.querySelector("h2")!.textContent =
+      this.type.toUpperCase() + " PROJECTS";
+  }
+
+  /**
+   * Método responsável por adicionar conteuod do DOM no HTML.
+   */
+  private attach() {
+    this.hostElement.insertAdjacentElement("beforeend", this.element);
+  }
+}
+
+/**
+ *  Project Input
  */
 class ProjectInput {
   templateElement: HTMLTemplateElement;
@@ -147,7 +197,7 @@ class ProjectInput {
       value: +pessoas,
       required: true,
       min: 1,
-      max: 5
+      max: 5,
     };
 
     // validação simples
@@ -194,3 +244,5 @@ class ProjectInput {
 }
 
 const projetoInput = new ProjectInput();
+const activePrjList = new ProjectList('active');
+const finishedPrjList = new ProjectList('finished');
