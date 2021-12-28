@@ -166,6 +166,9 @@ class ProjectList {
     const listEl = document.getElementById(
       `${this.type}-projects-list`
     )! as HTMLUListElement;
+
+    listEl.innerHTML = ''; // Reseta valores anteriores da lista do projeto
+    
     for (const projectItem of this.assignedProjects) {
       const listItem = document.createElement("li");
       listItem.textContent = projectItem.titulo;
