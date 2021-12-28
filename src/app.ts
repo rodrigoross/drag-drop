@@ -178,6 +178,14 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
   private projeto: Project;
 
+  get pessoas() {
+    if (this.projeto.pessoas === 1) {
+      return "1 pessoa";
+    } else {
+      return `${this.projeto.pessoas} pessoas`;
+    }
+  }
+
   constructor(hostId: string, project: Project) {
     super("single-project", hostId, false, project.id);
     this.projeto = project;
@@ -191,7 +199,7 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
   renderContent() {
     this.element.querySelector("h2")!.textContent = this.projeto.titulo;
     this.element.querySelector("h3")!.textContent =
-      this.projeto.pessoas.toString();
+      this.pessoas + " no projeto";
     this.element.querySelector("p")!.textContent = this.projeto.descricao;
   }
 }
@@ -243,7 +251,7 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     listEl.innerHTML = ""; // Reseta valores anteriores da lista do projeto
 
     for (const projectItem of this.assignedProjects) {
-      new ProjectItem(this.element.querySelector('ul')!.id, projectItem);
+      new ProjectItem(this.element.querySelector("ul")!.id, projectItem);
     }
   }
 }
