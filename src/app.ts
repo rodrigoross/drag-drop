@@ -31,7 +31,7 @@ class ProjectState extends State<Project> {
 
   // Para garantir somente uma instancia da classe.
   private constructor() {
-    super()
+    super();
   }
 
   static getInstance() {
@@ -128,8 +128,8 @@ function validate(input: Validatable) {
  */
 abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   templateElement: HTMLTemplateElement;
-  hostElement: T;
-  element: U;
+  hostElement: T; // Onde o elemento será renderizado
+  element: U; // Qual Elemento será renderizado
 
   constructor(
     templateId: string,
@@ -173,6 +173,30 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 }
 
 /**
+ * Project Item
+ */
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+  private projeto: Project;
+
+  constructor(hostId: string, project: Project) {
+    super("single-project", hostId, false, project.id);
+    this.projeto = project;
+
+    this.configure();
+    this.renderContent();
+  }
+
+  configure(): void {}
+
+  renderContent() {
+    this.element.querySelector("h2")!.textContent = this.projeto.titulo;
+    this.element.querySelector("h3")!.textContent =
+      this.projeto.pessoas.toString();
+    this.element.querySelector("p")!.textContent = this.projeto.descricao;
+  }
+}
+
+/**
  * Project List
  */
 class ProjectList extends Component<HTMLDivElement, HTMLElement> {
@@ -183,20 +207,6 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     this.assignedProjects = [];
     this.configure();
     this.renderContent();
-  }
-
-  renderProjects() {
-    const listEl = document.getElementById(
-      `${this.type}-projects-list`
-    )! as HTMLUListElement;
-
-    listEl.innerHTML = ""; // Reseta valores anteriores da lista do projeto
-
-    for (const projectItem of this.assignedProjects) {
-      const listItem = document.createElement("li");
-      listItem.textContent = projectItem.titulo;
-      listEl.appendChild(listItem);
-    }
   }
 
   configure() {
@@ -223,6 +233,18 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     this.element.querySelector("ul")!.id = listId; //acessa e seta a tag html
     this.element.querySelector("h2")!.textContent =
       this.type.toUpperCase() + " PROJECTS";
+  }
+
+  private renderProjects() {
+    const listEl = document.getElementById(
+      `${this.type}-projects-list`
+    )! as HTMLUListElement;
+
+    listEl.innerHTML = ""; // Reseta valores anteriores da lista do projeto
+
+    for (const projectItem of this.assignedProjects) {
+      new ProjectItem(this.element.querySelector('ul')!.id, projectItem);
+    }
   }
 }
 
