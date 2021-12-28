@@ -1,3 +1,41 @@
+// Projeto State Management
+class ProjectState {
+  private listeners: any[] = [];
+  private projects: any[] = [];
+  private static instance: ProjectState;
+
+  // Para garantir somente uma instancia da classe.
+  private constructor() {}
+  static getInstance() {
+    if (this.instance) {
+      return this.instance;
+    }
+    this.instance = new ProjectState();
+    return this.instance;
+  }
+
+  addListener(listenerFn: Function) {
+    this.listeners.push(listenerFn);
+  }
+
+  addProject(titulo: string, descricao: string, numDePessoas: number) {
+    const newProjeto = {
+      id: Math.random().toString(),
+      titulo,
+      descricao,
+      pessoas: numDePessoas,
+    };
+
+    this.projects.push(newProjeto);
+    for (const listenerFn of this.listeners) {
+      listenerFn(this.projects.slice()); // Para evitar bugs e passado uma copia do array
+    }
+  }
+}
+
+// Estado Global
+const projetoState = ProjectState.getInstance();
+
 /**
  * Autobind Decorator,  como método decorator
  */
@@ -65,6 +103,7 @@ class ProjectList {
   templateElement: HTMLTemplateElement;
   hostElement: HTMLDivElement;
   element: HTMLElement;
+  assignedProjects: any[];
 
   constructor(private type: "active" | "finished") {
     // Busca elemento com o template do formulario
@@ -74,7 +113,7 @@ class ProjectList {
 
     // Div onde a aplicação será executada.
     this.hostElement = document.getElementById("app")! as HTMLDivElement;
-
+    this.assignedProjects = [];
     /**
      * Carrega o conteudo do template para renderizar no DOM.
      */
@@ -86,10 +125,32 @@ class ProjectList {
     // Pega o primeiro elemento (form) e salva na váriavel
     this.element = importContent.firstElementChild as HTMLElement;
     this.element.id = `${this.type}-projects`; // adiciona ID para aplicar CSS e identificar
+
+    // Adiciona o listener para observar a lista de projetos, será executado em runtime quando listener for chamado.
+    projetoState.addListener((projects: any[]) => {
+      // Inicializa lista de projetos com a lista de projetos do estado.
+      this.assignedProjects = projects;
+      this.renderProjects();
+    });
+
     this.attach();
     this.renderContent();
   }
 
+  renderProjects() {
+    const listEl = document.getElementById(
+      `${this.type}-projects-list`
+    )! as HTMLUListElement;
+    for (const projectItem of this.assignedProjects) {
+      const listItem = document.createElement("li");
+      listItem.textContent = projectItem.titulo;
+      listEl.appendChild(listItem);
+    }
+  }
+
+  /**
+   * Metodo que acessa e renderiza dados da lista.
+   */
   private renderContent() {
     const listId = `${this.type}-projects-list`;
     this.element.querySelector("ul")!.id = listId; //acessa e seta a tag html
@@ -226,7 +287,7 @@ class ProjectInput {
     // verifica se veio os valores de tupla
     if (Array.isArray(entradaUsuario)) {
       const [titulo, desc, pessoas] = entradaUsuario; // remove valores do array
-
+      projetoState.addProject(titulo, desc, pessoas); // Adiciona o projeto no estado global
       console.log(titulo, desc, pessoas);
     }
 
@@ -244,5 +305,5 @@ class ProjectInput {
 }
 
 const projetoInput = new ProjectInput();
-const activePrjList = new ProjectList('active');
-const finishedPrjList = new ProjectList('finished');
+const activePrjList = new ProjectList("active");
+const finishedPrjList = new ProjectList("finished");
