@@ -211,7 +211,8 @@ class ProjectItem
 
   @Autobind
   dragStartHandler(event: DragEvent) {
-    console.log(event);
+    event.dataTransfer!.setData("text/plain", this.projeto.id); // Transfere somente o ID para poder recuper posteriormente
+    event.dataTransfer!.effectAllowed = "move";
   }
 
   dragEndHandler(_: DragEvent) {
@@ -248,12 +249,17 @@ class ProjectList
   }
 
   @Autobind
-  dragOverHandler(_: DragEvent) {
-    const listEl = this.element.querySelector("ul")!;
-    listEl.classList.add("droppable");
+  dragOverHandler(event: DragEvent) {
+    if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
+      event.preventDefault(); // Por padrao drag e drop e desabilitado no JS.
+      const listEl = this.element.querySelector("ul")!;
+      listEl.classList.add("droppable");
+    }
   }
 
-  dropHandler(_: DragEvent): void {}
+  dropHandler(event: DragEvent) {
+    console.log(event.dataTransfer!.getData('text/plain'));
+  }
 
   @Autobind
   dragLeaveHandler(_: DragEvent) {
@@ -395,7 +401,6 @@ class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
     if (Array.isArray(entradaUsuario)) {
       const [titulo, desc, pessoas] = entradaUsuario; // remove valores do array
       projetoState.addProject(titulo, desc, pessoas); // Adiciona o projeto no estado global
-      console.log(titulo, desc, pessoas);
     }
 
     this.limpaFormulario();
