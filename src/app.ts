@@ -116,49 +116,66 @@ function validate(input: Validatable) {
  */
 
 /**
- * Project List
+ * Componente Base de Projetos
+ *
+ * Usa Generics visto que o host e element pode ser qqer tipo de elemento dom
  */
-class ProjectList {
+abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   templateElement: HTMLTemplateElement;
-  hostElement: HTMLDivElement;
-  element: HTMLElement;
-  assignedProjects: Project[];
+  hostElement: T;
+  element: U;
 
-  constructor(private type: "active" | "finished") {
+  constructor(
+    templateId: string,
+    hostElementId: string,
+    insertAtStart: boolean,
+    newElementId?: string
+  ) {
     // Busca elemento com o template do formulario
     this.templateElement = document.getElementById(
-      "project-list"
+      templateId
     )! as HTMLTemplateElement;
 
     // Div onde a aplicação será executada.
-    this.hostElement = document.getElementById("app")! as HTMLDivElement;
-    this.assignedProjects = [];
-    /**
-     * Carrega o conteudo do template para renderizar no DOM.
-     */
+    this.hostElement = document.getElementById(hostElementId)! as T;
+
+    //Carrega o conteudo do template para renderizar no DOM.
     const importContent = document.importNode(
       this.templateElement.content,
       true
     );
 
     // Pega o primeiro elemento (form) e salva na váriavel
-    this.element = importContent.firstElementChild as HTMLElement;
-    this.element.id = `${this.type}-projects`; // adiciona ID para aplicar CSS e identificar
+    this.element = importContent.firstElementChild as U;
+    if (newElementId) this.element.id = newElementId; // adiciona ID para aplicar CSS e identificar
 
-    // Adiciona o listener para observar a lista de projetos, será executado em runtime quando listener for chamado.
-    projetoState.addListener((projects: Project[]) => {
-      // Filtra projetos pelo tipo.
-      const projetosListados = projects.filter(projeto =>{
-        if (this.type === 'active') return projeto.status === ProjectStatus.Active
-        return projeto.status === ProjectStatus.Finished
-      })
+    this.attach(insertAtStart);
+  }
 
-      // Inicializa lista de projetos com a lista de projetos do estado.
-      this.assignedProjects = projetosListados;
-      this.renderProjects();
-    });
+  /**
+   * Método responsável por adicionar conteuod do DOM no HTML.
+   */
+  private attach(insertAtBeginning: boolean) {
+    this.hostElement.insertAdjacentElement(
+      insertAtBeginning ? "afterbegin" : "beforeend",
+      this.element
+    );
+  }
 
-    this.attach();
+  abstract configure(): void;
+  abstract renderContent(): void;
+}
+
+/**
+ * Project List
+ */
+class ProjectList extends Component<HTMLDivElement, HTMLElement> {
+  assignedProjects: Project[];
+
+  constructor(private type: "active" | "finished") {
+    super("project-list", "app", false, `${type}-projects`);
+    this.assignedProjects = [];
+    this.configure();
     this.renderContent();
   }
 
@@ -167,8 +184,8 @@ class ProjectList {
       `${this.type}-projects-list`
     )! as HTMLUListElement;
 
-    listEl.innerHTML = ''; // Reseta valores anteriores da lista do projeto
-    
+    listEl.innerHTML = ""; // Reseta valores anteriores da lista do projeto
+
     for (const projectItem of this.assignedProjects) {
       const listItem = document.createElement("li");
       listItem.textContent = projectItem.titulo;
@@ -176,32 +193,37 @@ class ProjectList {
     }
   }
 
+  configure() {
+    // Adiciona o listener para observar a lista de projetos, será executado em runtime quando listener for chamado.
+    projetoState.addListener((projects: Project[]) => {
+      // Filtra projetos pelo tipo.
+      const projetosListados = projects.filter((projeto) => {
+        if (this.type === "active")
+          return projeto.status === ProjectStatus.Active;
+        return projeto.status === ProjectStatus.Finished;
+      });
+
+      // Inicializa lista de projetos com a lista de projetos do estado.
+      this.assignedProjects = projetosListados;
+      this.renderProjects();
+    });
+  }
+
   /**
    * Metodo que acessa e renderiza dados da lista.
    */
-  private renderContent() {
+  renderContent() {
     const listId = `${this.type}-projects-list`;
     this.element.querySelector("ul")!.id = listId; //acessa e seta a tag html
     this.element.querySelector("h2")!.textContent =
       this.type.toUpperCase() + " PROJECTS";
-  }
-
-  /**
-   * Método responsável por adicionar conteuod do DOM no HTML.
-   */
-  private attach() {
-    this.hostElement.insertAdjacentElement("beforeend", this.element);
   }
 }
 
 /**
  *  Project Input
  */
-class ProjectInput {
-  templateElement: HTMLTemplateElement;
-  hostElement: HTMLDivElement;
-  formElement: HTMLFormElement;
-
+class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
   /**
    * Propriedades com acesso aos inputs do formulário.
    */
@@ -213,58 +235,31 @@ class ProjectInput {
    * Inicializa e carrega os elementos HTML em memória para as propriedades.
    */
   constructor() {
-    // Busca elemento com o template do formulario
-    this.templateElement = document.getElementById(
-      "project-input"
-    )! as HTMLTemplateElement;
-
-    // Div onde a aplicação será executada.
-    this.hostElement = document.getElementById("app")! as HTMLDivElement;
-
-    /**
-     * Carrega o conteudo do template para renderizar no DOM.
-     */
-    const importContent = document.importNode(
-      this.templateElement.content,
-      true
-    );
-
-    // Pega o primeiro elemento (form) e salva na váriavel
-    this.formElement = importContent.firstElementChild as HTMLFormElement;
-    this.formElement.id = "user-input"; // adiciona ID para aplicar CSS
-
+    super("project-input", "app", true, "user-input");
     // Pega acesso aos inputs.
-    this.tituloInput = this.formElement.querySelector(
+    this.tituloInput = this.element.querySelector(
       "#title"
     )! as HTMLInputElement;
-    this.descricaoInput = this.formElement.querySelector(
+    this.descricaoInput = this.element.querySelector(
       "#description"
     )! as HTMLInputElement;
-    this.pessoasInput = this.formElement.querySelector(
+    this.pessoasInput = this.element.querySelector(
       "#people"
     )! as HTMLInputElement;
 
     this.configure(); // Adiciona eventListener no formulário
-
-    // renderiza o conteudo.
-    this.attach();
-  }
-
-  /**
-   * Método responsável por adicionar conteuod do DOM no HTML.
-   */
-  private attach() {
-    this.hostElement.insertAdjacentElement("afterbegin", this.formElement);
   }
 
   /**
    * Método responsável por adicionar listener no submit do formulario.
    */
-  private configure() {
+  configure() {
     // this.formElement.addEventListener('submit', this.handleSubmit); // This. que será executado no evento não se refere a classe instanciada.
     // this.formElement.addEventListener('submit', this.handleSubmit.bind(this)); // Agora é repassado o mesmo this, executado no método configure (class ProjectInput) para o metodo do submit
-    this.formElement.addEventListener("submit", this.handleSubmit);
+    this.element.addEventListener("submit", this.handleSubmit);
   }
+
+  renderContent(): void {}
 
   private loadUserInput(): [string, string, number] | void {
     const titulo = this.tituloInput.value;
