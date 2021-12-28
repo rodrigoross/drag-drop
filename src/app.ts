@@ -15,6 +15,44 @@ function Autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   return adjDescriptor;
 }
 
+/**
+ * Regras de validação
+ */
+// Objecto de validacao padrao
+interface Validatable {
+  value: string | number;
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+}
+
+// funcao que valida
+function validate(input: Validatable) {
+  let isValid = true;
+  if (input.required) {
+    isValid = isValid && input.value.toString().trim().length !== 0;
+  }
+
+  if (input.minLength != null && typeof input.value === "string") {
+    isValid = isValid && input.value.toString().trim().length > input.minLength;
+  }
+
+  if (input.maxLength != null && typeof input.value === "string") {
+    isValid = isValid && input.value.toString().trim().length > input.maxLength;
+  }
+
+  if (input.min != null && typeof input.value === "number") {
+    isValid = isValid && input.value >= input.min;
+  }
+
+  if (input.max != null && typeof input.value === "number") {
+    isValid = isValid && input.value <= input.max;
+  }
+
+  return isValid;
+}
 
 /**
  * OOP
@@ -57,9 +95,15 @@ class ProjectInput {
     this.formElement.id = "user-input"; // adiciona ID para aplicar CSS
 
     // Pega acesso aos inputs.
-    this.tituloInput = this.formElement.querySelector('#title')! as HTMLInputElement;
-    this.descricaoInput = this.formElement.querySelector('#description')! as HTMLInputElement;
-    this.pessoasInput = this.formElement.querySelector('#people')! as HTMLInputElement;
+    this.tituloInput = this.formElement.querySelector(
+      "#title"
+    )! as HTMLInputElement;
+    this.descricaoInput = this.formElement.querySelector(
+      "#description"
+    )! as HTMLInputElement;
+    this.pessoasInput = this.formElement.querySelector(
+      "#people"
+    )! as HTMLInputElement;
 
     this.configure(); // Adiciona eventListener no formulário
 
@@ -80,29 +124,48 @@ class ProjectInput {
   private configure() {
     // this.formElement.addEventListener('submit', this.handleSubmit); // This. que será executado no evento não se refere a classe instanciada.
     // this.formElement.addEventListener('submit', this.handleSubmit.bind(this)); // Agora é repassado o mesmo this, executado no método configure (class ProjectInput) para o metodo do submit
-    this.formElement.addEventListener("submit", this.handleSubmit)
+    this.formElement.addEventListener("submit", this.handleSubmit);
   }
 
-  private loadUserInput(): [ string, string, number ] | void {
+  private loadUserInput(): [string, string, number] | void {
     const titulo = this.tituloInput.value;
     const descricao = this.descricaoInput.value;
     const pessoas = this.pessoasInput.value;
 
+    const tituloValidate: Validatable = {
+      value: titulo,
+      required: true,
+    };
+
+    const descricaoValidate: Validatable = {
+      value: descricao,
+      required: true,
+      minLength: 5,
+    };
+
+    const pessoasValidate: Validatable = {
+      value: +pessoas,
+      required: true,
+      min: 1,
+      max: 5
+    };
+
     // validação simples
-    if (titulo.trim().length === 0 ||
-      descricao.trim().length === 0 ||
-      pessoas.trim().length === 0) 
-    {
-      alert('Valores invalidos, tente novamente!');
+    if (
+      !validate(tituloValidate) ||
+      !validate(descricaoValidate) ||
+      !validate(pessoasValidate)
+    ) {
+      alert("Valores invalidos, tente novamente!");
       return;
     }
 
-    return [ titulo, descricao, +pessoas];
+    return [titulo, descricao, +pessoas];
   }
 
   /**
    * Método responsável por executar a lógica de submit.
-   * @param event 
+   * @param event
    */
   @Autobind
   private handleSubmit(event: Event) {
@@ -112,7 +175,7 @@ class ProjectInput {
 
     // verifica se veio os valores de tupla
     if (Array.isArray(entradaUsuario)) {
-      const [ titulo, desc, pessoas] = entradaUsuario; // remove valores do array
+      const [titulo, desc, pessoas] = entradaUsuario; // remove valores do array
 
       console.log(titulo, desc, pessoas);
     }
@@ -124,9 +187,9 @@ class ProjectInput {
    * Limpa campos do formulario de projetos.
    */
   private limpaFormulario() {
-    this.tituloInput.value = '';
-    this.descricaoInput.value = '';
-    this.pessoasInput.value = '';
+    this.tituloInput.value = "";
+    this.descricaoInput.value = "";
+    this.pessoasInput.value = "";
   }
 }
 
