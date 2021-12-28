@@ -147,8 +147,14 @@ class ProjectList {
 
     // Adiciona o listener para observar a lista de projetos, será executado em runtime quando listener for chamado.
     projetoState.addListener((projects: Project[]) => {
+      // Filtra projetos pelo tipo.
+      const projetosListados = projects.filter(projeto =>{
+        if (this.type === 'active') return projeto.status === ProjectStatus.Active
+        return projeto.status === ProjectStatus.Finished
+      })
+
       // Inicializa lista de projetos com a lista de projetos do estado.
-      this.assignedProjects = projects;
+      this.assignedProjects = projetosListados;
       this.renderProjects();
     });
 
