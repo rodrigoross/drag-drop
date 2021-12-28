@@ -1,10 +1,12 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
+    mode: 'development',
     entry: './src/app.ts',
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: 'dist'
     },
     devtool: 'inline-source-map',
     module: {
@@ -18,5 +20,10 @@ module.exports = {
     },
     resolve: {
         extensions: ['.ts', '.js']
+    },
+    performance: {
+        hints: false,
+        maxEntrypointSize: 512000,
+        maxAssetSize: 512000
     }
 };
