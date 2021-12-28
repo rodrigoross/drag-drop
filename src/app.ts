@@ -1,9 +1,7 @@
 // Comentario proprio do ts para improtar
-/// <reference path="components/project-input.ts" />
-/// <reference path="components/project-list.ts" />
+import { ProjectInput } from "./components/projec-input.js";
+import { ProjectList } from "./components/projec-list.js";
 
-namespace App {
-  new ProjectInput();
-  new ProjectList("active");
-  new ProjectList("finished");
-}
+new ProjectInput();
+new ProjectList("active");
+new ProjectList("finished");
