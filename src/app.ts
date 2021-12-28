@@ -15,25 +15,31 @@ class Project {
 }
 
 // Projeto State Management
-type Listener = (items: Project[]) => void; // Tipo de funcao esperado nos listeners
+type Listener<T> = (items: T[]) => void; // Tipo de funcao esperado nos listeners
 
-class ProjectState {
-  private listeners: Listener[] = [];
+class State<T> {
+  protected listeners: Listener<T>[] = [];
+
+  addListener(listenerFn: Listener<T>) {
+    this.listeners.push(listenerFn);
+  }
+}
+
+class ProjectState extends State<Project> {
   private projects: Project[] = [];
   private static instance: ProjectState;
 
   // Para garantir somente uma instancia da classe.
-  private constructor() {}
+  private constructor() {
+    super()
+  }
+
   static getInstance() {
     if (this.instance) {
       return this.instance;
     }
     this.instance = new ProjectState();
     return this.instance;
-  }
-
-  addListener(listenerFn: Listener) {
-    this.listeners.push(listenerFn);
   }
 
   addProject(titulo: string, descricao: string, numDePessoas: number) {
