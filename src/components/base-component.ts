@@ -3,7 +3,7 @@
  *
  * Usa Generics visto que o host e element pode ser qqer tipo de elemento dom
  */
-export abstract class Component<T extends HTMLElement, U extends HTMLElement> {
+export default abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   templateElement: HTMLTemplateElement;
   hostElement: T; // Onde o elemento será renderizado
   element: U; // Qual Elemento será renderizado
